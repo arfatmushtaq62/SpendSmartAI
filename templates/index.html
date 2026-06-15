@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpendSmart AI</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0d0d14;
+  --surface: #15151f;
+  --card: #1c1c2a;
+  --border: rgba(255,255,255,0.08);
+  --teal: #a8edea;
+  --pink: #fed6e3;
+  --green: #38ef7d;
+  --text: rgba(255,255,255,0.88);
+  --muted: rgba(255,255,255,0.45);
+  --r: 16px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+.container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(13,13,20,0.9);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 0;
+}
+nav .inner { display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { display: flex; align-items: center; gap: 0.5rem; font-size: 1.2rem; font-weight: 800; }
+.nav-logo-text {
+  background: linear-gradient(90deg, var(--teal), var(--pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.nav-links { display: flex; gap: 1rem; align-items: center; }
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+.btn-api {
+  background: rgba(168,237,234,0.1);
+  border: 1px solid rgba(168,237,234,0.25);
+  color: var(--teal) !important;
+  padding: 0.35rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.82rem !important;
+}
+
+/* HERO */
+.hero { padding: 5rem 0 3rem; text-align: center; }
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: rgba(168,237,234,0.1);
+  border: 1px solid rgba(168,237,234,0.25);
+  padding: 0.35rem 1rem;
+  border-radius: 50px;
+  margin-bottom: 1.8rem;
+}
+h1 {
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  margin-bottom: 1.2rem;
+}
+.grad {
+  background: linear-gradient(90deg, var(--teal), var(--pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-size: 1.15rem;
+  color: var(--muted);
+  max-width: 540px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.7;
+}
+.stats { display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap; margin-bottom: 3rem; }
+.stat-n { font-size: 2.2rem; font-weight: 900; color: var(--teal); display: block; line-height: 1; }
+.stat-l { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+
+/* FORMAT PILLS */
+.formats { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
+.fmt { padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; }
+.fmt-csv { background: rgba(168,237,234,0.1); border: 1px solid rgba(168,237,234,0.3); color: var(--teal); }
+.fmt-pdf { background: rgba(253,214,227,0.1); border: 1px solid rgba(253,214,227,0.3); color: var(--pink); }
+.fmt-img { background: rgba(102,126,234,0.1); border: 1px solid rgba(102,126,234,0.3); color: #a8b8ff; }
+.fmt-ss  { background: rgba(56,239,125,0.1);  border: 1px solid rgba(56,239,125,0.3);  color: var(--green); }
+
+/* UPLOAD CARD */
+.upload-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 2.5rem;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.upload-card h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.25rem; }
+.upload-card .sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 1.5rem; }
+
+/* DROP ZONE */
+.drop-zone {
+  border: 2px dashed rgba(168,237,234,0.3);
+  border-radius: 12px;
+  padding: 2rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(168,237,234,0.02);
+  margin-bottom: 0.8rem;
+}
+.drop-zone:hover { border-color: var(--teal); background: rgba(168,237,234,0.06); }
+.drop-zone .dz-icon { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+.drop-zone .dz-text { font-size: 0.95rem; font-weight: 600; }
+.drop-zone .dz-sub  { font-size: 0.78rem; color: var(--muted); margin-top: 0.25rem; }
+
+/* BROWSE BTN */
+.browse-row { text-align: center; margin-bottom: 1.2rem; }
+.btn-browse {
+  display: inline-block;
+  padding: 0.55rem 1.4rem;
+  background: rgba(168,237,234,0.12);
+  border: 1px solid rgba(168,237,234,0.35);
+  border-radius: 8px;
+  color: var(--teal);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-browse:hover { background: rgba(168,237,234,0.2); }
+
+/* FILE BADGE */
+.file-badge {
+  display: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  word-break: break-all;
+}
+
+/* FIELD */
+.field-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+select {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+  cursor: pointer;
+  appearance: none;
+}
+select:focus { outline: none; border-color: var(--teal); }
+
+/* ACCURACY NOTE */
+.acc-note {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-bottom: 1.2rem;
+  line-height: 1.5;
+}
+.acc-note strong { color: rgba(255,255,255,0.65); }
+
+/* ANALYSE BTN */
+.btn-analyse {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--teal), var(--pink));
+  color: #0d0d14;
+  font-size: 1.05rem;
+  font-weight: 900;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-analyse:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(168,237,234,0.3);
+}
+.btn-analyse:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* PROGRESS */
+.progress-wrap {
+  display: none;
+  max-width: 640px;
+  margin: 2rem auto;
+  text-align: center;
+}
+.progress-label { font-size: 0.95rem; font-weight: 600; color: var(--teal); margin-bottom: 0.8rem; }
+.progress-bg { width: 100%; height: 5px; background: rgba(255,255,255,0.07); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--teal), var(--pink)); border-radius: 3px; transition: width 0.6s ease; }
+
+/* ERROR */
+.error-box {
+  display: none;
+  max-width: 640px;
+  margin: 1rem auto;
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  color: #fca5a5;
+  font-size: 0.9rem;
+}
+
+/* BANKS */
+.banks { padding: 2.5rem 0; border-top: 1px solid var(--border); margin-top: 2rem; }
+.banks h3 { text-align: center; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 1rem; }
+.bank-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem; }
+.bank-pill { padding: 0.3rem 0.8rem; background: var(--card); border: 1px solid var(--border); border-radius: 6px; font-size: 0.78rem; color: var(--muted); }
+.privacy { text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.25); margin-top: 1rem; }
+
+/* RESULTS */
+#results { display: none; padding: 2.5rem 0; }
+.results-hero {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.results-hero h2 { font-size: 1.8rem; font-weight: 900; margin-bottom: 0.3rem; }
+.res-meta { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.8rem; }
+.res-sum { font-size: 1rem; color: rgba(255,255,255,0.7); max-width: 600px; margin: 0 auto; }
+
+/* METRICS */
+.metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.metric { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 1.3rem 1rem; text-align: center; }
+.metric-val { font-size: 1.8rem; font-weight: 900; color: var(--teal); display: block; letter-spacing: -0.03em; }
+.metric-lbl { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-top: 0.3rem; }
+
+/* SAVING CARD */
+.saving-card {
+  background: linear-gradient(135deg, #11998e, #38ef7d);
+  border-radius: var(--r);
+  padding: 1.8rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 32px rgba(56,239,125,0.2);
+}
+.saving-amt { font-size: 2.8rem; font-weight: 900; color: #fff; display: block; letter-spacing: -0.04em; }
+.saving-lbl { font-size: 0.95rem; color: rgba(255,255,255,0.85); font-weight: 600; margin-top: 0.3rem; }
+.saving-yr  { font-size: 0.82rem; color: rgba(255,255,255,0.65); margin-top: 0.2rem; }
+
+/* TABS */
+.tabs {
+  display: flex; gap: 0.4rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 1.5rem;
+}
+.tab-btn {
+  flex: 1; padding: 0.6rem; border: none;
+  background: none; color: var(--muted);
+  font-size: 0.88rem; font-weight: 700;
+  border-radius: 8px; cursor: pointer;
+  transition: all 0.2s;
+}
+.tab-btn.active { background: rgba(168,237,234,0.15); color: var(--teal); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* REPORT */
+.report-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 2rem;
+  line-height: 1.8;
+}
+.report-box h2 { font-size: 1.1rem; font-weight: 800; color: var(--teal); margin: 1.2rem 0 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid rgba(168,237,234,0.15); }
+.report-box h2:first-child { margin-top: 0; }
+.report-box p { color: rgba(255,255,255,0.8); margin-bottom: 0.7rem; }
+.report-box ul { padding-left: 1.3rem; margin-bottom: 0.7rem; }
+.report-box li { color: rgba(255,255,255,0.75); margin-bottom: 0.25rem; }
+.report-box strong { color: #fff; }
+
+/* DOWNLOAD ROW */
+.dl-row { display: flex; gap: 0.8rem; margin-top: 1rem; }
+.btn-dl {
+  flex: 1; padding: 0.8rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid var(--border);
+  text-align: center;
+}
+.btn-pdf { background: rgba(168,237,234,0.12); border-color: rgba(168,237,234,0.3); color: var(--teal); }
+.btn-pdf:hover { background: rgba(168,237,234,0.22); }
+.btn-md  { background: rgba(255,255,255,0.05); color: var(--muted); }
+.btn-md:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+/* CHARTS */
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 1.2rem; }
+.chart-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r); padding: 1.4rem; }
+.chart-card h3 { font-size: 0.8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
+@media (max-width: 640px) { .charts-grid { grid-template-columns: 1fr; } }
+
+/* TRANSACTIONS */
+.txn-filter { margin-bottom: 1rem; }
+.txn-filter select { width: auto; min-width: 200px; margin-bottom: 0; }
+.table-wrap { overflow-x: auto; border-radius: var(--r); border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; background: var(--card); font-size: 0.88rem; }
+thead th { background: var(--surface); padding: 0.7rem 1rem; text-align: left; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); border-bottom: 1px solid var(--border); }
+tbody td { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04); color: rgba(255,255,255,0.8); }
+tbody tr:last-child td { border-bottom: none; }
+.cat-badge { display: inline-block; padding: 0.18rem 0.55rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600; background: rgba(168,237,234,0.1); color: var(--teal); }
+
+/* NEW ANALYSIS BTN */
+.btn-new {
+  display: block; width: 100%; padding: 0.9rem;
+  margin-top: 2rem;
+  background: none; border: 2px solid var(--border);
+  border-radius: 12px; color: var(--muted);
+  font-size: 0.95rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-new:hover { border-color: var(--teal); color: var(--teal); }
+
+/* SPINNER */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.25); border-top-color: #0d0d14; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 0.4rem; }
+
+/* CONTACT PAGE */
+#contact { display: none; padding: 4rem 0; }
+.contact-card {
+  max-width: 560px;
+  margin: 0 auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 3rem 2.5rem;
+  text-align: center;
+}
+.contact-avatar {
+  width: 72px; height: 72px;
+  background: linear-gradient(135deg, var(--teal), var(--pink));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 1.2rem;
+}
+.contact-name {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.3rem;
+}
+.contact-title {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+.contact-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+.contact-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+.contact-link:hover {
+  border-color: var(--teal);
+  background: rgba(168,237,234,0.06);
+  color: var(--teal);
+  transform: translateX(4px);
+}
+.contact-link .cl-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.contact-link .cl-label { flex: 1; text-align: left; }
+.contact-link .cl-arrow { color: var(--muted); font-size: 0.8rem; }
+.cl-linkedin  { background: rgba(10,102,194,0.2); }
+.cl-github    { background: rgba(255,255,255,0.08); }
+.cl-x         { background: rgba(255,255,255,0.08); }
+.cl-email     { background: rgba(168,237,234,0.12); }
+.cl-phone     { background: rgba(56,239,125,0.12); }
+.contact-built {
+  font-size: 0.78rem;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  padding-top: 1.2rem;
+  line-height: 1.6;
+}
+.contact-built a {
+  color: var(--teal);
+  text-decoration: none;
+}
+
+@media print {
+  html, body { margin: 0; padding: 0; background: white; }
+  nav, #landing, #results, .progress-wrap, .error-box, #pdf-area ~ * { display: none !important; }
+  #pdf-area {
+    display: block !important;
+    position: static !important;
+    width: 100%;
+    background: white;
+    color: #111;
+    font-family: Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.65;
+  }
+  .pdf-header { margin-bottom: 1rem; padding-bottom: 0.8rem; border-bottom: 2px solid #0d9488; }
+  .pdf-title { font-size: 18pt; font-weight: 900; color: #0d0d14; margin: 0 0 0.25rem; }
+  .pdf-meta { font-size: 8.5pt; color: #666; }
+  .pdf-stats { display: table; width: 100%; margin: 0.8rem 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.8rem; }
+  .pdf-stat { display: inline-block; width: 24%; text-align: center; vertical-align: top; }
+  .pdf-stat-val { font-size: 14pt; font-weight: 900; color: #0d9488; display: block; }
+  .pdf-stat-lbl { font-size: 7pt; color: #888; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; }
+  .pdf-saving { background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 6px; padding: 0.7rem 1rem; margin: 0.8rem 0; text-align: center; page-break-inside: avoid; }
+  .pdf-saving-amt { font-size: 16pt; font-weight: 900; color: #16a34a; }
+  .pdf-saving-lbl { font-size: 9pt; color: #166534; }
+  .pdf-body h2 { font-size: 11pt; font-weight: 800; color: #0d9488; margin: 1rem 0 0.3rem; padding-bottom: 0.25rem; border-bottom: 1px solid #e2e8f0; page-break-after: avoid; }
+  .pdf-body p { color: #374151; margin-bottom: 0.4rem; }
+  .pdf-body ul { padding-left: 1.2rem; margin-bottom: 0.4rem; }
+  .pdf-body li { color: #374151; margin-bottom: 0.15rem; }
+  .pdf-body strong { color: #111; }
+  .pdf-opps { margin-top: 1rem; page-break-inside: avoid; }
+  .pdf-opps table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+  .pdf-opps th, .pdf-opps td { padding: 5px 8px; border: 1px solid #e2e8f0; }
+  .pdf-opps th { background: #f3f4f6; font-weight: 700; text-align: left; }
+  .pdf-opps .money { text-align: right; color: #16a34a; font-weight: 700; }
+  .pdf-footer { margin-top: 1.5rem; padding-top: 0.6rem; border-top: 1px solid #e2e8f0; font-size: 7.5pt; color: #9ca3af; text-align: center; }
+  @page { margin: 1.8cm; size: A4; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="container inner">
+    <div class="nav-logo">
+      <span>💰</span>
+      <span class="nav-logo-text">SpendSmart AI</span>
+    </div>
+    <div class="nav-links">
+      <a href="#" id="navContact">Contact</a>
+      <a href="/docs" target="_blank" class="btn-api">📖 API Docs</a>
+    </div>
+  </div>
+</nav>
+
+<!-- LANDING -->
+<section id="landing">
+  <div class="hero container">
+    <div class="badge">✨ Free · No bank login · UK · US · India</div>
+    <h1>
+      <span class="grad">Stop wondering where</span><br>
+      your money goes.
+    </h1>
+    <p class="hero-sub">
+      Upload your bank statement. Get a plain English breakdown of every spending habit
+      with a smarter, cheaper alternative for each one.
+    </p>
+    <div class="stats">
+      <div><span class="stat-n">3</span><span class="stat-l">Countries</span></div>
+      <div><span class="stat-n">19</span><span class="stat-l">Banks</span></div>
+      <div><span class="stat-n">30s</span><span class="stat-l">To your report</span></div>
+      <div><span class="stat-n">£0</span><span class="stat-l">Cost</span></div>
+    </div>
+    <div class="formats">
+      <span class="fmt fmt-csv">📊 CSV Export</span>
+      <span class="fmt fmt-pdf">📄 PDF Statement</span>
+      <span class="fmt fmt-img">📸 Photo</span>
+      <span class="fmt fmt-ss">📱 Screenshot</span>
+    </div>
+
+    <!-- UPLOAD CARD -->
+    <div class="upload-card">
+      <h2>📂 Upload your bank statement</h2>
+      <p class="sub">CSV · PDF · Photo · Screenshot · Any UK, US, or Indian bank</p>
+
+      <!-- Drop zone (visual only) -->
+      <div class="drop-zone" id="dropZone">
+        <span class="dz-icon" id="dzIcon">📥</span>
+        <span class="dz-text" id="dzText">Drag and drop your file here</span>
+        <span class="dz-sub">CSV, PDF, JPG, PNG accepted</span>
+      </div>
+
+      <!-- Browse button — most reliable cross-browser file picker -->
+      <div class="browse-row">
+        <label class="btn-browse" for="fileInput">📁 Browse and select file</label>
+        <input type="file" id="fileInput"
+               accept=".csv,.pdf,.jpg,.jpeg,.png,.webp,.bmp"
+               style="display:none;">
+      </div>
+
+      <!-- File selected badge -->
+      <div id="fileBadge" class="file-badge"></div>
+
+      <!-- Country -->
+      <label class="field-label" for="countrySelect">Your country</label>
+      <select id="countrySelect">
+        <option value="UK">🇬🇧 United Kingdom</option>
+        <option value="US">🇺🇸 United States</option>
+        <option value="India">🇮🇳 India</option>
+      </select>
+
+      <!-- Accuracy note -->
+      <div class="acc-note">
+        <strong>💡 Accuracy tip:</strong>
+        CSV gives the best results (~99%). PDF works well for most banks (85-95%).
+        Photos and screenshots work best when clear and well-lit (75-85%).
+      </div>
+
+      <!-- Analyse -->
+      <button id="analyseBtn" class="btn-analyse" disabled>
+        🚀 Analyse My Statement
+      </button>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-label" id="progressLabel">Starting...</div>
+      <div class="progress-bg">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="error-box" id="errorBox"></div>
+
+    <!-- Banks -->
+    <div class="banks">
+      <h3>Supported banks</h3>
+      <div class="bank-pills">
+        <span class="bank-pill">🇬🇧 Barclays</span>
+        <span class="bank-pill">🇬🇧 HSBC</span>
+        <span class="bank-pill">🇬🇧 Monzo</span>
+        <span class="bank-pill">🇬🇧 Starling</span>
+        <span class="bank-pill">🇬🇧 NatWest</span>
+        <span class="bank-pill">🇬🇧 Lloyds</span>
+        <span class="bank-pill">🇬🇧 Halifax</span>
+        <span class="bank-pill">🇬🇧 Santander</span>
+        <span class="bank-pill">🇺🇸 Chase</span>
+        <span class="bank-pill">🇺🇸 Bank of America</span>
+        <span class="bank-pill">🇺🇸 Wells Fargo</span>
+        <span class="bank-pill">🇺🇸 Citibank</span>
+        <span class="bank-pill">🇮🇳 SBI</span>
+        <span class="bank-pill">🇮🇳 HDFC</span>
+        <span class="bank-pill">🇮🇳 ICICI</span>
+        <span class="bank-pill">🇮🇳 Axis Bank</span>
+        <span class="bank-pill">🇮🇳 Kotak</span>
+        <span class="bank-pill">🇮🇳 Paytm</span>
+      </div>
+      <p class="privacy">🔒 Data processed locally, never stored or shared.</p>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results">
+  <div class="container">
+    <div class="results-hero">
+      <h2>💰 Your Money Report</h2>
+      <p class="res-meta" id="resMeta"></p>
+      <p class="res-sum" id="resSummary"></p>
+    </div>
+
+    <div class="metrics" id="metricsGrid"></div>
+    <div id="savingCard" style="display:none;"></div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="report">📋 Report</button>
+      <button class="tab-btn" data-tab="charts">📊 Charts</button>
+      <button class="tab-btn" data-tab="transactions">🔍 Transactions</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-report">
+      <div class="report-box" id="reportBox"></div>
+      <div class="dl-row">
+        <button class="btn-dl btn-pdf" id="btnPdf">📄 Download as PDF</button>
+        <button class="btn-dl btn-md"  id="btnMd">⬇️ Download Markdown</button>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-charts">
+      <div class="charts-grid">
+        <div class="chart-card"><h3>Where Your Money Went</h3><canvas id="donutChart"></canvas></div>
+        <div class="chart-card"><h3>Savings Breakdown</h3><canvas id="savingsChart"></canvas></div>
+      </div>
+      <div class="chart-card"><h3>Spending by Category</h3><canvas id="barChart"></canvas></div>
+    </div>
+
+    <div class="tab-panel" id="tab-transactions">
+      <div class="txn-filter">
+        <label class="field-label">Filter by category</label>
+        <select id="catFilter"><option value="">All Categories</option></select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Merchant</th><th>Total</th><th>Visits</th><th>Category</th></tr></thead>
+          <tbody id="txnBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <button class="btn-new" id="btnNew">🔄 Analyse Another Statement</button>
+  </div>
+</section>
+
+<!-- CONTACT PAGE -->
+<section id="contact">
+  <div class="container">
+    <div class="contact-card">
+      <div class="contact-avatar">👨‍💻</div>
+      <div class="contact-name">Arfat Mushtaq</div>
+      <div class="contact-title">
+        MSc Artificial Intelligence for Business Intelligence<br>
+        University of Leicester, UK
+      </div>
+
+      <div class="contact-links">
+
+        <a class="contact-link" href="https://www.linkedin.com/in/arfat-mushtaq-0b756824a/" target="_blank">
+          <div class="cl-icon cl-linkedin">💼</div>
+          <span class="cl-label">LinkedIn</span>
+          <span class="cl-arrow">↗</span>
+        </a>
+
+        <a class="contact-link" href="https://github.com/arfatmushtaq62" target="_blank">
+          <div class="cl-icon cl-github">🐙</div>
+          <span class="cl-label">GitHub</span>
+          <span class="cl-arrow">↗</span>
+        </a>
+
+        <a class="contact-link" href="https://x.com/ArfatMushtaq62" target="_blank">
+          <div class="cl-icon cl-x">𝕏</div>
+          <span class="cl-label">X (Twitter)</span>
+          <span class="cl-arrow">↗</span>
+        </a>
+
+        <a class="contact-link" href="mailto:arfatmushtaq62@gmail.com">
+          <div class="cl-icon cl-email">✉️</div>
+          <span class="cl-label">arfatmushtaq62@gmail.com</span>
+          <span class="cl-arrow">↗</span>
+        </a>
+
+        <a class="contact-link" href="tel:+447721174673">
+          <div class="cl-icon cl-phone">📞</div>
+          <span class="cl-label">+44 7721 174 673</span>
+          <span class="cl-arrow">↗</span>
+        </a>
+
+      </div>
+
+      <div class="contact-built">
+        Built by Arfat Mushtaq · SpendSmart AI is an open-source personal finance tool.<br>
+        View the source on <a href="https://github.com/arfatmushtaq62" target="_blank">GitHub</a>.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PDF PRINT AREA -->
+<div id="pdf-area" style="display:none;"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+var selectedFile = null;
+var currentData  = null;
+var charts       = {};
+
+// ── ELEMENTS ───────────────────────────────────────────────────────────────
+var fileInput    = document.getElementById('fileInput');
+var dropZone     = document.getElementById('dropZone');
+var fileBadge    = document.getElementById('fileBadge');
+var analyseBtn   = document.getElementById('analyseBtn');
+var progressWrap = document.getElementById('progressWrap');
+var progressLabel= document.getElementById('progressLabel');
+var progressFill = document.getElementById('progressFill');
+var errorBox     = document.getElementById('errorBox');
+var landing      = document.getElementById('landing');
+var results      = document.getElementById('results');
+
+// ── FILE INPUT ─────────────────────────────────────────────────────────────
+fileInput.addEventListener('change', function() {
+  if (fileInput.files && fileInput.files.length > 0) {
+    setFile(fileInput.files[0]);
+  }
+});
+
+// Drop zone drag/drop
+dropZone.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  dropZone.style.borderColor = 'var(--teal)';
+  dropZone.style.background  = 'rgba(168,237,234,0.06)';
+});
+dropZone.addEventListener('dragleave', function() {
+  dropZone.style.borderColor = '';
+  dropZone.style.background  = '';
+});
+dropZone.addEventListener('drop', function(e) {
+  e.preventDefault();
+  dropZone.style.borderColor = '';
+  dropZone.style.background  = '';
+  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+    setFile(e.dataTransfer.files[0]);
+  }
+});
+
+function setFile(file) {
+  selectedFile = file;
+  var ext = file.name.split('.').pop().toLowerCase();
+
+  var configs = {
+    csv:  { icon: '📊', label: '📊 CSV detected',        color: '#a8edea', bg: 'rgba(168,237,234,0.15)', border: 'rgba(168,237,234,0.3)' },
+    pdf:  { icon: '📄', label: '📄 PDF detected',        color: '#fed6e3', bg: 'rgba(253,214,227,0.15)', border: 'rgba(253,214,227,0.3)' },
+    jpg:  { icon: '📸', label: '📸 Photo detected',      color: '#a8b8ff', bg: 'rgba(102,126,234,0.15)', border: 'rgba(102,126,234,0.3)' },
+    jpeg: { icon: '📸', label: '📸 Photo detected',      color: '#a8b8ff', bg: 'rgba(102,126,234,0.15)', border: 'rgba(102,126,234,0.3)' },
+    png:  { icon: '📱', label: '📱 Screenshot detected', color: '#43e97b', bg: 'rgba(67,233,123,0.15)',  border: 'rgba(67,233,123,0.3)' },
+    webp: { icon: '📸', label: '📸 Photo detected',      color: '#a8b8ff', bg: 'rgba(102,126,234,0.15)', border: 'rgba(102,126,234,0.3)' }
+  };
+  var cfg = configs[ext] || { icon: '📁', label: '📁 File selected', color: '#fff', bg: 'rgba(255,255,255,0.1)', border: 'rgba(255,255,255,0.2)' };
+
+  // Update drop zone
+  document.getElementById('dzIcon').textContent = cfg.icon;
+  document.getElementById('dzText').textContent = file.name;
+
+  // Show badge
+  fileBadge.textContent     = cfg.label + ' — ' + file.name;
+  fileBadge.style.color     = cfg.color;
+  fileBadge.style.background= cfg.bg;
+  fileBadge.style.border    = '1px solid ' + cfg.border;
+  fileBadge.style.display   = 'block';
+
+  // Enable analyse button
+  analyseBtn.disabled = false;
+  analyseBtn.textContent = '🚀 Analyse My Statement (' + ext.toUpperCase() + ')';
+}
+
+// ── PROGRESS ───────────────────────────────────────────────────────────────
+var stepMsgs = [
+  [10,  '📄 Reading your bank statement...'],
+  [25,  '🔍 Parsing transactions...'],
+  [40,  '📊 Categorising spending...'],
+  [55,  '🧠 Analysing food, coffee and groceries...'],
+  [70,  '💡 Building smart suggestions...'],
+  [85,  '✍️ Writing your personalised report...'],
+  [100, '✅ Report ready!']
+];
+var stepIdx = 0;
+var stepTimer = null;
+
+function startProgress() {
+  stepIdx = 0;
+  progressWrap.style.display = 'block';
+  errorBox.style.display = 'none';
+  setProgress(stepMsgs[0][0], stepMsgs[0][1]);
+  stepTimer = setInterval(function() {
+    stepIdx = Math.min(stepIdx + 1, stepMsgs.length - 2);
+    setProgress(stepMsgs[stepIdx][0], stepMsgs[stepIdx][1]);
+  }, 4000);
+}
+
+function stopProgress(ok) {
+  clearInterval(stepTimer);
+  if (ok) {
+    setProgress(100, '✅ Report ready!');
+    setTimeout(function() { progressWrap.style.display = 'none'; }, 800);
+  } else {
+    progressWrap.style.display = 'none';
+  }
+}
+
+function setProgress(pct, msg) {
+  progressFill.style.width = pct + '%';
+  progressLabel.textContent = msg;
+}
+
+// ── ANALYSE ────────────────────────────────────────────────────────────────
+analyseBtn.addEventListener('click', function() {
+  if (!selectedFile) return;
+
+  var country  = document.getElementById('countrySelect').value;
+  var formData = new FormData();
+  formData.append('file', selectedFile);
+  formData.append('country', country);
+
+  analyseBtn.disabled = true;
+  analyseBtn.innerHTML = '<span class="spinner"></span> Analysing...';
+  startProgress();
+  errorBox.style.display = 'none';
+  results.style.display  = 'none';
+
+  fetch('/analyse', { method: 'POST', body: formData })
+    .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
+    .then(function(r) {
+      if (!r.ok) throw new Error(r.data.detail || 'Analysis failed.');
+      stopProgress(true);
+      currentData = r.data;
+      renderResults(r.data);
+    })
+    .catch(function(err) {
+      stopProgress(false);
+      errorBox.textContent = '⚠️ ' + err.message;
+      errorBox.style.display = 'block';
+    })
+    .finally(function() {
+      analyseBtn.disabled = false;
+      analyseBtn.textContent = '🚀 Analyse My Statement';
+    });
+});
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+function fmtAmt(v, sym) {
+  return sym + parseFloat(v).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function flagOf(c) {
+  return { UK: '🇬🇧', US: '🇺🇸', India: '🇮🇳' }[c] || '🌍';
+}
+
+function renderResults(data) {
+  var sym = data.currency_symbol;
+
+  // Hero
+  document.getElementById('resMeta').textContent =
+    flagOf(data.country) + ' ' + data.country + '  ·  ' +
+    data.date_from + ' – ' + data.date_to + '  ·  ' +
+    data.total_transactions + ' transactions';
+  document.getElementById('resSummary').textContent = data.quick_summary;
+
+  // Metrics
+  var grid = document.getElementById('metricsGrid');
+  var mets = [
+    ['Total Spent',    fmtAmt(data.total_spent, sym)],
+    ['Transactions',   data.total_transactions],
+    ['Monthly Saving', fmtAmt(data.total_monthly_saving, sym)],
+    ['Annual Saving',  fmtAmt(data.total_annual_saving, sym)]
+  ];
+  grid.innerHTML = mets.map(function(m) {
+    return '<div class="metric"><span class="metric-val">' + m[1] + '</span><span class="metric-lbl">' + m[0] + '</span></div>';
+  }).join('');
+
+  // Saving card
+  var sc = document.getElementById('savingCard');
+  if (data.total_monthly_saving > 0) {
+    sc.style.display = 'block';
+    sc.className = 'saving-card';
+    sc.innerHTML =
+      '<div class="saving-amt">' + fmtAmt(data.total_monthly_saving, sym) + '<span style="font-size:1.2rem;font-weight:700">/month</span></div>' +
+      '<div class="saving-lbl">💡 Your realistic saving opportunity</div>' +
+      '<div class="saving-yr">That is ' + fmtAmt(data.total_annual_saving, sym) + ' per year</div>';
+  } else {
+    sc.style.display = 'none';
+  }
+
+  // Report
+  document.getElementById('reportBox').innerHTML = marked.parse(data.report_markdown);
+
+  // Charts
+  renderCharts(data, sym);
+
+  // Transactions
+  renderTransactions(data, sym);
+
+  // Show results
+  landing.style.display = 'none';
+  results.style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Download buttons
+  document.getElementById('btnMd').onclick = function() {
+    var blob = new Blob([data.report_markdown], { type: 'text/markdown' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'spendsmart_report.md';
+    a.click();
+  };
+  document.getElementById('btnPdf').onclick = function() {
+    generatePDF(data, sym);
+  };
+}
+
+// ── CHARTS ─────────────────────────────────────────────────────────────────
+function renderCharts(data, sym) {
+  Object.values(charts).forEach(function(c) { c.destroy(); });
+  charts = {};
+
+  var COLORS = ['#a8edea','#fed6e3','#667eea','#43e97b','#f093fb','#fbbf24','#f87171','#60a5fa'];
+  var bg = 'rgba(0,0,0,0)';
+  var tc = 'rgba(255,255,255,0.55)';
+  var gc = 'rgba(255,255,255,0.06)';
+
+  var cats = Object.entries(data.categories || {}).filter(function(e) { return e[1].total > 0; });
+
+  if (cats.length) {
+    charts.donut = new Chart(document.getElementById('donutChart'), {
+      type: 'doughnut',
+      data: {
+        labels: cats.map(function(e) { return e[1].label; }),
+        datasets: [{ data: cats.map(function(e) { return e[1].total; }), backgroundColor: COLORS, borderColor: '#15151f', borderWidth: 3 }]
+      },
+      options: {
+        cutout: '55%',
+        plugins: { legend: { labels: { color: tc, font: { size: 11 } } }, tooltip: { callbacks: { label: function(ctx) { return ' ' + sym + ctx.parsed.toFixed(2); } } } }
+      }
+    });
+  }
+
+  var opps = data.saving_opportunities || [];
+  if (opps.length) {
+    charts.savings = new Chart(document.getElementById('savingsChart'), {
+      type: 'bar',
+      data: {
+        labels: opps.map(function(o) { return o.category; }),
+        datasets: [{ data: opps.map(function(o) { return o.monthly_saving; }), backgroundColor: ['#11998e','#38ef7d','#a8edea','#fed6e3'].slice(0, opps.length), borderRadius: 8 }]
+      },
+      options: {
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx) { return ' ' + sym + ctx.parsed.toFixed(2); } } } },
+        scales: { x: { ticks: { color: tc }, grid: { color: gc } }, y: { ticks: { color: tc, callback: function(v) { return sym + v; } }, grid: { color: gc } } }
+      }
+    });
+  }
+
+  if (cats.length) {
+    var sorted = cats.slice().sort(function(a, b) { return a[1].total - b[1].total; });
+    charts.bar = new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: {
+        labels: sorted.map(function(e) { return e[1].label; }),
+        datasets: [{ data: sorted.map(function(e) { return e[1].total; }), backgroundColor: COLORS, borderRadius: 6 }]
+      },
+      options: {
+        indexAxis: 'y',
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx) { return ' ' + sym + ctx.parsed.toFixed(2); } } } },
+        scales: { x: { ticks: { color: tc, callback: function(v) { return sym + v; } }, grid: { color: gc } }, y: { ticks: { color: tc }, grid: { display: false } } }
+      }
+    });
+  }
+}
+
+// ── TRANSACTIONS ───────────────────────────────────────────────────────────
+function renderTransactions(data, sym) {
+  var cf = document.getElementById('catFilter');
+  cf.innerHTML = '<option value="">All Categories</option>';
+  Object.values(data.categories || {}).forEach(function(v) {
+    var opt = document.createElement('option');
+    opt.value = v.label;
+    opt.textContent = v.label;
+    cf.appendChild(opt);
+  });
+
+  var rows = (data.frequent_merchants || []).map(function(m) {
+    return { merchant: m.merchant, total: m.total, count: m.count, category: m.category };
+  });
+
+  renderTable(rows, sym);
+
+  cf.onchange = function() {
+    var sel = cf.value;
+    var filtered = sel ? rows.filter(function(r) { return r.category === sel; }) : rows;
+    renderTable(filtered, sym);
+  };
+}
+
+function renderTable(rows, sym) {
+  var tbody = document.getElementById('txnBody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:2rem;">No transactions to show.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(function(r) {
+    return '<tr>' +
+      '<td>' + r.merchant + '</td>' +
+      '<td>' + fmtAmt(r.total, sym) + '</td>' +
+      '<td>' + r.count + (r.count > 1 ? ' visits' : ' visit') + '</td>' +
+      '<td><span class="cat-badge">' + r.category + '</span></td>' +
+      '</tr>';
+  }).join('');
+}
+
+// ── TABS ───────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── NEW ANALYSIS ───────────────────────────────────────────────────────────
+document.getElementById('btnNew').addEventListener('click', function() {
+  results.style.display  = 'none';
+  landing.style.display  = 'block';
+  selectedFile = null;
+  currentData  = null;
+  fileInput.value = '';
+  fileBadge.style.display = 'none';
+  document.getElementById('dzIcon').textContent = '📥';
+  document.getElementById('dzText').textContent = 'Drag and drop your file here';
+  analyseBtn.disabled = true;
+  analyseBtn.textContent = '🚀 Analyse My Statement';
+  errorBox.style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ── CONTACT NAV ────────────────────────────────────────────────────────────
+var contactPage = document.getElementById('contact');
+var navContact  = document.getElementById('navContact');
+
+function showPage(page) {
+  landing.style.display     = 'none';
+  results.style.display     = 'none';
+  contactPage.style.display = 'none';
+  page.style.display        = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+navContact.addEventListener('click', function(e) {
+  e.preventDefault();
+  showPage(contactPage);
+});
+
+// Clicking the logo always goes back to home
+document.querySelector('.nav-logo').style.cursor = 'pointer';
+document.querySelector('.nav-logo').addEventListener('click', function() {
+  contactPage.style.display = 'none';
+  results.style.display     = 'none';
+  landing.style.display     = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ── PDF ────────────────────────────────────────────────────────────────────
+function generatePDF(data, sym) {
+  var statsHtml = [
+    ['Total Spent',    fmtAmt(data.total_spent, sym)],
+    ['Transactions',   String(data.total_transactions)],
+    ['Monthly Saving', fmtAmt(data.total_monthly_saving, sym)],
+    ['Annual Saving',  fmtAmt(data.total_annual_saving, sym)]
+  ].map(function(s) {
+    return '<td style="text-align:center;padding:12px;"><div style="font-size:18pt;font-weight:900;color:#0d9488;">' + s[1] + '</div><div style="font-size:7pt;color:#888;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;">' + s[0] + '</div></td>';
+  }).join('');
+
+  var savingHtml = data.total_monthly_saving > 0
+    ? '<div style="background:#f0fdf4;border:2px solid #86efac;border-radius:8px;padding:12px 20px;margin:16px 0;text-align:center;">' +
+      '<div style="font-size:20pt;font-weight:900;color:#16a34a;">' + fmtAmt(data.total_monthly_saving, sym) + '/month</div>' +
+      '<div style="font-size:9.5pt;color:#166534;margin-top:4px;">Realistic saving — ' + fmtAmt(data.total_annual_saving, sym) + ' per year</div>' +
+      '</div>'
+    : '';
+
+  var oppsHtml = '';
+  if (data.saving_opportunities && data.saving_opportunities.length) {
+    var rows = data.saving_opportunities.map(function(o) {
+      return '<tr><td style="padding:6px 10px;border:1px solid #e2e8f0;">' + o.category + '</td>' +
+        '<td style="padding:6px 10px;border:1px solid #e2e8f0;text-align:right;color:#16a34a;font-weight:700;">' + fmtAmt(o.monthly_saving, sym) + '</td>' +
+        '<td style="padding:6px 10px;border:1px solid #e2e8f0;text-align:right;">' + fmtAmt(o.annual_saving, sym) + '</td>' +
+        '<td style="padding:6px 10px;border:1px solid #e2e8f0;color:#6b7280;">' + o.description + '</td></tr>';
+    }).join('');
+    oppsHtml = '<h2 style="font-size:12pt;font-weight:800;color:#0d9488;margin:20px 0 8px;padding-bottom:5px;border-bottom:1px solid #e2e8f0;">Saving Opportunities Summary</h2>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:9.5pt;">' +
+      '<thead><tr style="background:#f8fafc;">' +
+      '<th style="padding:6px 10px;border:1px solid #e2e8f0;text-align:left;">Category</th>' +
+      '<th style="padding:6px 10px;border:1px solid #e2e8f0;text-align:right;">Monthly</th>' +
+      '<th style="padding:6px 10px;border:1px solid #e2e8f0;text-align:right;">Annual</th>' +
+      '<th style="padding:6px 10px;border:1px solid #e2e8f0;text-align:left;">Action</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  var reportHtml = marked.parse(data.report_markdown)
+    .replace(/<h2>/g, '<h2 style="font-size:12pt;font-weight:800;color:#0d9488;margin:18px 0 6px;padding-bottom:5px;border-bottom:1px solid #e2e8f0;page-break-after:avoid;">')
+    .replace(/<p>/g, '<p style="color:#374151;margin-bottom:8px;">')
+    .replace(/<ul>/g, '<ul style="padding-left:18px;margin-bottom:8px;">')
+    .replace(/<li>/g, '<li style="color:#374151;margin-bottom:3px;">')
+    .replace(/<strong>/g, '<strong style="color:#111;">');
+
+  var dateStr = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+    '<title>SpendSmart AI Report</title>' +
+    '<style>' +
+    'body{font-family:Arial,sans-serif;font-size:10.5pt;line-height:1.65;color:#111;margin:0;padding:2cm;background:white;}' +
+    'h1{font-size:18pt;font-weight:900;color:#0d0d14;margin:0 0 4px;}' +
+    '.meta{font-size:8.5pt;color:#666;padding-bottom:10px;border-bottom:2px solid #0d9488;margin-bottom:14px;}' +
+    '.stats-table{width:100%;border-collapse:collapse;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:14px;}' +
+    '@media print{body{padding:0;margin:0;}@page{margin:1.8cm;size:A4;}}' +
+    '</style></head><body>' +
+    '<h1>&#x1F4B0; SpendSmart AI &mdash; Money Report</h1>' +
+    '<div class="meta">' + flagOf(data.country) + ' ' + data.country +
+    ' &nbsp;&middot;&nbsp; ' + data.date_from + ' &ndash; ' + data.date_to +
+    ' &nbsp;&middot;&nbsp; ' + data.total_transactions + ' transactions' +
+    ' &nbsp;&middot;&nbsp; Generated ' + dateStr + '</div>' +
+    '<table class="stats-table"><tr>' + statsHtml + '</tr></table>' +
+    savingHtml +
+    reportHtml +
+    oppsHtml +
+    '<div style="margin-top:20px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:7.5pt;color:#9ca3af;text-align:center;">' +
+    'Generated by SpendSmart AI &nbsp;&middot;&nbsp; Data processed locally, never stored &nbsp;&middot;&nbsp; For informational purposes only' +
+    '</div></body></html>';
+
+  var win = window.open('', '_blank', 'width=800,height=900');
+  if (!win) {
+    alert('Please allow pop-ups for this site to download the PDF, then try again.');
+    return;
+  }
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+  setTimeout(function() {
+    win.print();
+    setTimeout(function() { win.close(); }, 1000);
+  }, 500);
+}
+</script>
+</body>
+</html>

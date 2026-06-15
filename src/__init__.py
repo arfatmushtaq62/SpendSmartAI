@@ -1,0 +1,1 @@
+# SpendSmart AI — src package

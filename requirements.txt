@@ -1,0 +1,18 @@
+# Core ML/AI
+groq>=0.11.0
+python-dotenv>=1.0.0
+pandas>=2.0.0
+
+# Streamlit UI
+streamlit>=1.28.0
+plotly>=5.17.0
+openpyxl>=3.1.0
+
+# FastAPI Backend
+fastapi>=0.110.0
+uvicorn>=0.27.0
+python-multipart>=0.0.9
+
+# File processing
+pymupdf>=1.23.0
+Pillow>=10.0.0

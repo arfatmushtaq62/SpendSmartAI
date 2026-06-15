@@ -1,0 +1,25 @@
+# Environment
+venv/
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Personal data — never commit real bank statements
+data/sample_statements/*.csv
+data/eval/
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Logs
+*.log
