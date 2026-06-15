@@ -6,11 +6,14 @@ colorTo: green
 sdk: docker
 pinned: false
 ---
+
 # 💰 SpendSmart AI
 
 **AI-powered personal finance assistant that tells you exactly where your money goes — and the smarter alternative for every spending habit.**
 
-[🚀 Live Demo](#) · [📋 Report Example](#) · Built with Python, Groq (Llama 3.3 70B), Pandas, Plotly, Streamlit
+[🚀 Live App](https://arfatmushtaq62-spendsmartai.hf.space) · [📖 API Docs](https://arfatmushtaq62-spendsmartai.hf.space/docs) · [🤗 Hugging Face](https://huggingface.co/spaces/arfatmushtaq62/SpendSmartAI)
+
+Built with Python · FastAPI · Groq (Llama 3.3 70B) · Pandas · Chart.js · Docker
 
 ---
 
@@ -18,89 +21,110 @@ pinned: false
 
 Most people know roughly what they earn. Almost nobody knows exactly where it goes.
 
-Budgeting apps show you charts. Generic AI gives you generic advice. Neither tells you that the chicken burger you ordered for £28 on Tuesday would cost £4.20 to make at home — or that you have 6 active subscriptions totalling £65/month and haven't opened 3 of them recently.
+Budgeting apps show you charts. Generic AI gives you generic advice. Neither tells you that the chicken burger you ordered for £28 on Tuesday would cost £4.20 to make at home — or that you have 6 active subscriptions totalling £65/month you've barely used.
 
 SpendSmart AI reads your actual bank statement and gives you specific, actionable answers in plain English. No charts to interpret. No advice that sounds the same for everyone.
 
 ---
 
+## Live Demo
+
+🚀 **[https://arfatmushtaq62-spendsmartai.hf.space](https://arfatmushtaq62-spendsmartai.hf.space)**
+
+Upload any of the sample statements in `data/sample_statements/` to try it instantly — no real bank data needed.
+
+---
+
 ## What It Does
 
-Upload a CSV bank statement export from any major bank in the UK, US, or India. SpendSmart AI:
+Upload a bank statement (CSV, PDF, photo, or screenshot) from any major UK, US, or Indian bank. SpendSmart AI:
 
-1. **Automatically detects your bank format** — handles different column names, date formats, and encodings across 19 banks
-2. **Categorises every transaction** — food delivery, coffee, groceries, subscriptions, gym, transport, and more
-3. **Deep-analyses your three biggest discretionary categories:**
-   - 🍔 Food delivery: specific order count, average cost, home cooking alternative with nutrition context
-   - ☕ Coffee and cafes: visit frequency, cost per cup, realistic switching saving
-   - 🛒 Groceries: tier analysis (budget / mid-range / premium) with switching recommendations
-4. **Gives honest generic advice** for categories where we only know payment data, not usage
-5. **Generates a personalised plain English report** using Llama 3.3 70B via Groq
-6. **Calculates your realistic monthly saving** — what you could save with small, specific changes
+1. **Auto-detects your bank format** — handles different column names, date formats, and encodings across 19 banks
+2. **Two-pass categorisation** — fast keyword matching (Pass 1) + LLM smart re-categorisation of unknown local merchants like "Tea Time" or "Raj's Kitchen" (Pass 2)
+3. **Deep-analyses three key categories:**
+   - 🍔 Food delivery — order count, average cost, home cooking alternative with nutrition context
+   - ☕ Coffee and cafes — visit frequency, home coffee saving calculation
+   - 🛒 Groceries — budget vs premium tier analysis with switching recommendations
+4. **Honest generic advice** for categories where we only know payment data, not usage (gym, subscriptions, transport)
+5. **Frequent merchant detection** — calls out merchants you visit 3+ times by name
+6. **Personal transfer detection** — separates payments to individuals from merchant spending
+7. **AI-generated plain English report** using Llama 3.3 70B via Groq
+8. **PDF download** of your full report
+9. **REST API** with full interactive documentation at `/docs`
 
 ---
 
 ## Live Example Output
 
-> *"You ordered food delivery 18 times this month (4.5x per week). Average order: £26.00. Total: £468. The same meal cooked at home costs approximately £4.50 — £21.50 less per meal. If you cooked at home just half the time, you would save £221 this month — £2,652 per year. Home-cooked meals typically have 30-50% less sodium and better portion control than delivery food."*
+> *"You visited Tea Time 8 times this month — at £8.25 average, that's £66 just on this one cafe. Making coffee at home for 60% of those visits would save approximately £23 this month — £276 per year."*
 
 ---
 
 ## Architecture
 
 ```
-CSV Upload (any UK/US/India bank)
+Bank Statement (CSV / PDF / Photo / Screenshot)
         │
         ▼
 ┌─────────────────┐
-│   parser.py     │  Auto-detects bank format, normalises columns,
-│                 │  parses dates, filters spending transactions only
+│   parser.py     │  Auto-detects format, normalises columns,
+│                 │  LLM vision for images, PyMuPDF for PDFs
 └────────┬────────┘
          │
          ▼
-┌─────────────────┐
-│ categoriser.py  │  Matches descriptions against merchant lists
-│                 │  in config.py → 9 categories deterministically
-└────────┬────────┘
+┌─────────────────────────────────────────────────┐
+│           categoriser.py (Two-pass)             │
+│  Pass 1: keyword matching (fast, free)          │
+│  Pass 2: LLM re-categorises unknown merchants   │
+│          "Tea Time" → coffee ✅                  │
+│          "Circuit Go" → uncertain → honest msg  │
+└────────┬────────────────────────────────────────┘
          │
          ▼
 ┌─────────────────────────────────────────────────┐
 │   analyser.py          │    adviser.py           │
 │   Deep analysis:       │    Honest generic:      │
 │   - Food delivery      │    - Subscriptions      │
-│   - Coffee             │    - Gym memberships    │
+│   - Coffee             │    - Gym & fitness      │
 │   - Groceries          │    - Transport          │
-│   (specific numbers)   │    (no fake usage data) │
+│   (real numbers)       │    (no fake claims)     │
 └─────────────────────────────────────────────────┘
          │
          ▼
 ┌─────────────────┐
-│   report.py     │  Groq API (Llama 3.3 70B) synthesises
-│                 │  pre-calculated numbers into plain English report
+│   report.py     │  LLM writes narrative sections only.
+│                 │  Gym/transport/subscriptions appended
+│                 │  verbatim — LLM cannot add assumptions.
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│    app.py       │  Streamlit UI — upload, progress,
-│                 │  report, charts, transaction explorer
+│  api/main.py    │  FastAPI REST backend — serves HTML
+│  templates/     │  frontend + JSON API endpoints
+│  index.html     │
 └─────────────────┘
 ```
 
-**Key design decision:** The LLM never does the maths. Numbers come from Python (deterministic, accurate). The LLM only writes the plain English explanation around pre-calculated figures. This prevents hallucination of financial data.
+**Key design decisions:**
+
+- **LLM never does the maths** — numbers come from Python (deterministic). LLM only writes language.
+- **Verbatim sections for uncertain categories** — gym/transport advice is pre-written by `adviser.py` and appended directly. The LLM cannot rewrite it and add assumptions like "if attendance has dropped."
+- **Honesty principle** — we only claim what bank data tells us. We never say "you haven't used Netflix" because we cannot know that from a payment.
 
 ---
 
 ## Honest Design Principle
 
-SpendSmart AI only claims what bank data actually tells us.
+A bank statement tells us: what was paid, when, and to whom. Nothing else.
 
-A bank statement shows: what was paid, when, and to whom. It does NOT show whether a streaming service was watched, whether a gym was visited, or what was ordered from a delivery app.
-
-So:
-- **Deep analysis categories** (food delivery, coffee, groceries): specific personalised numbers
-- **Generic advice categories** (subscriptions, gym, transport): honest general suggestions, no fake behavioural claims
-
-This distinction between what we know and what we assume is a deliberate responsible AI design decision.
+| Category | What we know | What we say |
+|---|---|---|
+| Food delivery | Amount, frequency, platform | Specific numbers + home cooking cost |
+| Coffee | Amount, visit count | Specific saving calculation |
+| Groceries | Supermarket tier | Switching recommendation |
+| Gym | Payment amount, merchant name | "We've categorised this as gym — but only you know if you're attending" |
+| Subscriptions | Monthly charges | Generic rationalisation advice |
+| Transport | Trip count, total spend | Compare against public transport |
 
 ---
 
@@ -117,7 +141,7 @@ This distinction between what we know and what we assume is a deliberate respons
 | Halifax | | |
 | Santander | | |
 
-Any bank exporting standard CSV format will also work via auto-detection.
+Any bank exporting standard CSV also works via auto-detection.
 
 ---
 
@@ -125,12 +149,15 @@ Any bank exporting standard CSV format will also work via auto-detection.
 
 | Component | Technology | Why |
 |---|---|---|
-| LLM | Groq API — Llama 3.3 70B | Free tier, fast, high quality |
-| Data processing | Python, Pandas | Reliable, deterministic calculations |
-| Visualisation | Plotly | Interactive charts |
-| UI | Streamlit | Fast to build, easy to deploy |
-| Config | Python dict (config.py) | Adding a country = one config block |
-| Cost | £0 / $0 / ₹0 | Groq free tier is sufficient |
+| Backend | FastAPI | REST API + serves frontend from one server |
+| LLM | Groq — Llama 3.3 70B | Free tier, fast inference |
+| PDF parsing | PyMuPDF | Extracts text from digital PDFs |
+| Image parsing | Groq vision | Reads photos and screenshots |
+| Data processing | Python, Pandas | Deterministic calculations |
+| Charts | Chart.js | Lightweight, no framework needed |
+| Frontend | HTML/CSS/JS | No framework — pure web standards |
+| Deployment | Docker + Hugging Face Spaces | Free, public, permanent URL |
+| Cost | £0 / $0 / ₹0 | Entirely free stack |
 
 ---
 
@@ -138,126 +165,146 @@ Any bank exporting standard CSV format will also work via auto-detection.
 
 ```
 SpendSmartAI/
-├── app.py                    # Streamlit application (UI)
+├── api/
+│   └── main.py               # FastAPI app — serves frontend + REST API
 ├── src/
 │   ├── config.py             # Country configs: UK, US, India
-│   ├── parser.py             # CSV parser — auto-detects bank format
-│   ├── categoriser.py        # Transaction categorisation engine
+│   ├── parser.py             # Universal parser: CSV, PDF, image
+│   ├── categoriser.py        # Two-pass categorisation engine
 │   ├── analyser.py           # Deep analysis: food, coffee, groceries
-│   ├── adviser.py            # Generic advice: subscriptions, gym, transport
+│   ├── adviser.py            # Honest generic advice engine
 │   └── report.py             # LLM report generation via Groq
+├── templates/
+│   └── index.html            # Complete frontend (HTML/CSS/JS)
+├── static/                   # Static assets
 ├── data/
-│   └── sample_statements/    # Sample CSVs for UK, US, India
+│   └── sample_statements/    # Sample CSVs: UK, US, India
 ├── tests/
-│   └── test_pipeline.py      # End-to-end pipeline test (6 checks)
+│   ├── test_pipeline.py      # End-to-end pipeline test
+│   └── test_api.py           # API endpoint tests
+├── Dockerfile                # Docker config for Hugging Face
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## Setup and Running
+## API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/analyse` | Upload statement, get full JSON analysis |
+| `GET` | `/report/{session_id}` | Retrieve previous analysis |
+| `GET` | `/countries` | List supported countries and banks |
+| `GET` | `/health` | Health check |
+| `GET` | `/docs` | Interactive API documentation |
+
+Full interactive docs: **[https://arfatmushtaq62-spendsmartai.hf.space/docs](https://arfatmushtaq62-spendsmartai.hf.space/docs)**
+
+---
+
+## Local Setup
 
 ### Prerequisites
 - Python 3.10+
-- Free Groq API key from console.groq.com (no credit card required)
+- Free Groq API key from [console.groq.com](https://console.groq.com) (no credit card)
 
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/SpendSmartAI
+git clone https://github.com/arfatmushtaq62/SpendSmartAI
 cd SpendSmartAI
 
-# Create virtual environment
 python -m venv venv
 
-# Activate (Windows)
+# Windows
 .\venv\Scripts\Activate.ps1
 
-# Activate (Mac/Linux)
+# Mac/Linux
 source venv/bin/activate
 
-# Install dependencies
 pip install -r requirements.txt
 
-# Add your Groq API key
 echo "GROQ_API_KEY=your_key_here" > .env
 ```
 
-### Run the pipeline test
+### Run
+
+```bash
+uvicorn api.main:app --reload --port 8000
+```
+
+Open: [http://localhost:8000](http://localhost:8000)
+API docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+### Test
+
 ```bash
 python tests/test_pipeline.py
 ```
-Expected: 6/6 tests passed.
-
-### Start the app
-```bash
-streamlit run app.py
-```
-Opens at http://localhost:8501
 
 ---
 
 ## How to Export Your Bank Statement
 
-### UK Banks
-- **Monzo:** App → Account → Statements → Export → CSV
-- **Barclays:** Online Banking → Accounts → View Statements → Export → CSV
-- **HSBC:** Online Banking → My Accounts → View Statement → Download → CSV
-- **NatWest:** Online Banking → Statements → Download → CSV
+### 🇬🇧 UK
+- **Monzo** → App → Account → Statements → Export → CSV
+- **Barclays** → Online Banking → Accounts → View Statements → Export → CSV
+- **HSBC** → Online Banking → My Accounts → View Statement → Download → CSV
+- **NatWest** → Online Banking → Statements → Download → CSV
+- **Lloyds / Halifax** → Online Banking → View Statements → Export → CSV
 
-### US Banks
-- **Chase:** chase.com → Accounts → Download Account Activity → CSV
-- **Bank of America:** Online Banking → Download → CSV
+### 🇺🇸 US
+- **Chase** → chase.com → Accounts → Download Account Activity → CSV
+- **Bank of America** → Online Banking → Accounts → Download → CSV
+- **Wells Fargo** → wellsfargo.com → Account Activity → Download → CSV
 
-### Indian Banks
-- **HDFC:** NetBanking → Accounts → Download Account Statement → CSV
-- **ICICI:** Internet Banking → Account Statement → Download CSV
-- **SBI:** OnlineSBI → Account Summary → Download Statement
+### 🇮🇳 India
+- **HDFC** → NetBanking → Accounts → Download Account Statement → CSV
+- **ICICI** → Internet Banking → Account Statement → Download CSV
+- **SBI** → OnlineSBI → Account Summary → Download Statement
 
 ---
 
-## Limitations (Honest)
+## Limitations
 
-- **Item-level detail:** We see "Deliveroo — £28.50" not what was ordered. The home cooking cost comparison uses country-average benchmarks, not your specific meal.
-- **Usage data:** We cannot see if you watched Netflix or went to the gym. Generic advice is honest about this.
-- **Scanned PDFs:** Does not support image-based PDFs. CSV export from your bank required.
-- **Multi-currency accounts:** Analyses one currency per upload session.
-- **Historical comparison:** Single-period analysis only. Month-over-month comparison is a planned V2 feature.
+- **Item-level detail** — we see "Deliveroo — £28.50" not what was ordered. Home cooking comparisons use country-average benchmarks.
+- **Usage data** — we cannot see if you watched Netflix or attended the gym. Generic advice is honest about this.
+- **Scanned PDFs** — image-based PDFs require the photo upload path, not PDF upload.
+- **Multi-currency** — analyses one currency per session.
 
 ---
 
 ## Roadmap
 
-**V1 (current):** UK, US, India · 3 deep categories · 4 generic categories · Groq LLM report · Streamlit UI
+**V1 (current):** UK · US · India · CSV/PDF/photo · FastAPI · Docker deployment
 
 **V2 (planned):**
 - Month-over-month comparison
 - Personalised saving goals with timeline
 - Canada, Australia support
-- Weekly email digest export
-- Dark mode UI
+- Recurring payment detection
+- Weekly summary email export
 
 ---
 
 ## For Interviewers
 
-This project was built to demonstrate:
+This project demonstrates:
 
-1. **End-to-end ML/AI system design** — from raw CSV to natural language output
-2. **Responsible AI thinking** — the distinction between what data tells us vs what we assume
-3. **Global extensibility** — adding a country requires one config block, zero code changes
-4. **Production-minded architecture** — numbers computed deterministically, LLM used only for language
-5. **User-first design** — built for non-specialists, not financial experts
+1. **Full-stack AI system** — file parsing → LLM categorisation → analysis → REST API → frontend
+2. **Responsible AI design** — verbatim sections prevent LLM from adding unverifiable claims
+3. **Global extensibility** — adding a new country = one config block, zero code changes
+4. **Production architecture** — deterministic Python for numbers, LLM only for language
+5. **API-first thinking** — FastAPI backend with full OpenAPI documentation
 
-Paired with **CreditGuard** (credit risk prediction with SHAP explainability), these two projects cover both sides of personal finance AI: the lender's risk model and the borrower's spending reality.
+Paired with **CreditGuard** (ML credit risk prediction with SHAP explainability for GDPR Article 22 compliance), these projects cover both sides of personal finance AI: the lender's risk model and the borrower's spending reality.
 
 ---
 
 ## Author
 
 **Arfat Mushtaq**
-MSc Artificial Intelligence for Business Intelligence — University of Leicester
+MSc Artificial Intelligence for Business Intelligence — University of Leicester, UK
 
-[LinkedIn](#) · [GitHub](#) · arfatmushtaq62@gmail.com
+[💼 LinkedIn](https://www.linkedin.com/in/arfat-mushtaq-0b756824a/) · [🐙 GitHub](https://github.com/arfatmushtaq62) · [✉️ arfatmushtaq62@gmail.com](mailto:arfatmushtaq62@gmail.com)
