@@ -2,7 +2,6 @@
 Title: SpendSmart AI
 Emoji: 💰
 # 💰 SpendSmart AI
-
 **AI-powered personal finance assistant that tells you exactly where your money goes — and the smarter alternative for every spending habit.**
 
 [🚀 Live App](https://arfatmushtaq62-spendsmartai.hf.space) · [📖 API Docs](https://arfatmushtaq62-spendsmartai.hf.space/docs) · [🤗 Hugging Face](https://huggingface.co/spaces/arfatmushtaq62/SpendSmartAI)
