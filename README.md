@@ -8,6 +8,7 @@ app_port: 7860
 pinned: false
 ---
 Title: SpendSmart AI
+
 Emoji: 💰
 # 💰 SpendSmart AI
 **AI-powered personal finance assistant that tells you exactly where your money goes — and the smarter alternative for every spending habit.**
