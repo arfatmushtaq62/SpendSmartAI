@@ -1,4 +1,12 @@
 ---
+title: SpendSmart AI
+emoji: 💰
+colorFrom: green
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
 Title: SpendSmart AI
 Emoji: 💰
 # 💰 SpendSmart AI
