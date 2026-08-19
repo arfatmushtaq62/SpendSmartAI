@@ -21,7 +21,7 @@ Built with Python · FastAPI · Groq (Llama 3.3 70B) · Pandas · Chart.js · Do
 
 Most people know roughly what they earn. Almost nobody knows exactly where it goes.
 
-Budgeting apps show you charts. Generic AI gives you generic advice. Neither tells you that the chicken burger you ordered for £28 on Tuesday would cost £4.20 to make at home — or that you have 6 active subscriptions totalling £65/month you've barely used.
+Budgeting apps show you charts. Generic AI gives you generic advice. Neither tells you that the chicken burger you ordered for £28 on Tuesday would cost £4.20 to make at home or that you have 6 active subscriptions totalling £65/month you've barely used.
 
 SpendSmart AI reads your actual bank statement and gives you specific, actionable answers in plain English. No charts to interpret. No advice that sounds the same for everyone.
 
@@ -40,14 +40,13 @@ Upload any of the sample statements in `data/sample_statements/` to try it insta
 Upload a bank statement (CSV, PDF, photo, or screenshot) from any major UK, US, or Indian bank. SpendSmart AI:
 
 1. **Auto-detects your bank format** — handles different column names, date formats, and encodings across 19 banks
-2. **Two-pass categorisation** — fast keyword matching (Pass 1) + LLM smart re-categorisation of unknown local merchants like "Tea Time" or "Raj's Kitchen" (Pass 2)
-3. **Deep-analyses three key categories:**
+2. **Deep-analyses three key categories:**
    - 🍔 Food delivery — order count, average cost, home cooking alternative with nutrition context
    - ☕ Coffee and cafes — visit frequency, home coffee saving calculation
    - 🛒 Groceries — budget vs premium tier analysis with switching recommendations
 4. **Honest generic advice** for categories where we only know payment data, not usage (gym, subscriptions, transport)
-5. **Frequent merchant detection** — calls out merchants you visit 3+ times by name
-6. **Personal transfer detection** — separates payments to individuals from merchant spending
+5. **Frequent merchant detection** calls out merchants you visit 3+ times by name
+6. **Personal transfer detection** separates payments to individuals from merchant spending
 7. **AI-generated plain English report** using Llama 3.3 70B via Groq
 8. **PDF download** of your full report
 9. **REST API** with full interactive documentation at `/docs`
@@ -56,60 +55,16 @@ Upload a bank statement (CSV, PDF, photo, or screenshot) from any major UK, US, 
 
 ## Live Example Output
 
-> *"You visited Tea Time 8 times this month — at £8.25 average, that's £66 just on this one cafe. Making coffee at home for 60% of those visits would save approximately £23 this month — £276 per year."*
+> *"You visited Greggs 8 times this month at £8.25 average, that's £66 just on this one cafe. Making coffee at home for 60% of those visits would save approximately £23 this month , £276 per year."*
 
 ---
 
-## Architecture
-
-```
-Bank Statement (CSV / PDF / Photo / Screenshot)
-        │
-        ▼
-┌─────────────────┐
-│   parser.py     │  Auto-detects format, normalises columns,
-│                 │  LLM vision for images, PyMuPDF for PDFs
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────┐
-│           categoriser.py (Two-pass)             │
-│  Pass 1: keyword matching (fast, free)          │
-│  Pass 2: LLM re-categorises unknown merchants   │
-│          "Tea Time" → coffee ✅                  │
-│          "Circuit Go" → uncertain → honest msg  │
-└────────┬────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────┐
-│   analyser.py          │    adviser.py           │
-│   Deep analysis:       │    Honest generic:      │
-│   - Food delivery      │    - Subscriptions      │
-│   - Coffee             │    - Gym & fitness      │
-│   - Groceries          │    - Transport          │
-│   (real numbers)       │    (no fake claims)     │
-└─────────────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│   report.py     │  LLM writes narrative sections only.
-│                 │  Gym/transport/subscriptions appended
-│                 │  verbatim — LLM cannot add assumptions.
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐
-│  api/main.py    │  FastAPI REST backend — serves HTML
-│  templates/     │  frontend + JSON API endpoints
-│  index.html     │
-└─────────────────┘
-```
 
 **Key design decisions:**
 
 - **LLM never does the maths** — numbers come from Python (deterministic). LLM only writes language.
 - **Verbatim sections for uncertain categories** — gym/transport advice is pre-written by `adviser.py` and appended directly. The LLM cannot rewrite it and add assumptions like "if attendance has dropped."
-- **Honesty principle** — we only claim what bank data tells us. We never say "you haven't used Netflix" because we cannot know that from a payment.
+- **Honesty principle** we only claim what bank data tells us. We never say "you haven't used Netflix" because we cannot know that from a payment.
 
 ---
 
