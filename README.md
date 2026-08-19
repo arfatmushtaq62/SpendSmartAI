@@ -1,12 +1,6 @@
 ---
-title: SpendSmart AI
-emoji: 💰
-colorFrom: blue
-colorTo: green
-sdk: docker
-pinned: false
----
-
+Title: SpendSmart AI
+Emoji: 💰
 # 💰 SpendSmart AI
 
 **AI-powered personal finance assistant that tells you exactly where your money goes — and the smarter alternative for every spending habit.**
@@ -44,12 +38,12 @@ Upload a bank statement (CSV, PDF, photo, or screenshot) from any major UK, US, 
    - 🍔 Food delivery — order count, average cost, home cooking alternative with nutrition context
    - ☕ Coffee and cafes — visit frequency, home coffee saving calculation
    - 🛒 Groceries — budget vs premium tier analysis with switching recommendations
-4. **Honest generic advice** for categories where we only know payment data, not usage (gym, subscriptions, transport)
-5. **Frequent merchant detection** calls out merchants you visit 3+ times by name
-6. **Personal transfer detection** separates payments to individuals from merchant spending
-7. **AI-generated plain English report** using Llama 3.3 70B via Groq
-8. **PDF download** of your full report
-9. **REST API** with full interactive documentation at `/docs`
+3. **Honest generic advice** for categories where we only know payment data, not usage (gym, subscriptions, transport)
+4. **Frequent merchant detection** calls out merchants you visit 3+ times by name
+5. **Personal transfer detection** separates payments to individuals from merchant spending
+6. **AI-generated plain English report** using Llama 3.3 70B via Groq
+7. **PDF download** of your full report
+8. **REST API** with full interactive documentation at `/docs`
 
 ---
 
@@ -77,7 +71,7 @@ A bank statement tells us: what was paid, when, and to whom. Nothing else.
 | Food delivery | Amount, frequency, platform | Specific numbers + home cooking cost |
 | Coffee | Amount, visit count | Specific saving calculation |
 | Groceries | Supermarket tier | Switching recommendation |
-| Gym | Payment amount, merchant name | "We've categorised this as gym — but only you know if you're attending" |
+| Gym | Payment amount, merchant name | "We've categorised this as gym but only you know if you're attending" |
 | Subscriptions | Monthly charges | Generic rationalisation advice |
 | Transport | Trip count, total spend | Compare against public transport |
 
@@ -158,48 +152,6 @@ Full interactive docs: **[https://arfatmushtaq62-spendsmartai.hf.space/docs](htt
 
 ---
 
-## Local Setup
-
-### Prerequisites
-- Python 3.10+
-- Free Groq API key from [console.groq.com](https://console.groq.com) (no credit card)
-
-### Installation
-
-```bash
-git clone https://github.com/arfatmushtaq62/SpendSmartAI
-cd SpendSmartAI
-
-python -m venv venv
-
-# Windows
-.\venv\Scripts\Activate.ps1
-
-# Mac/Linux
-source venv/bin/activate
-
-pip install -r requirements.txt
-
-echo "GROQ_API_KEY=your_key_here" > .env
-```
-
-### Run
-
-```bash
-uvicorn api.main:app --reload --port 8000
-```
-
-Open: [http://localhost:8000](http://localhost:8000)
-API docs: [http://localhost:8000/docs](http://localhost:8000/docs)
-
-### Test
-
-```bash
-python tests/test_pipeline.py
-```
-
----
-
 ## How to Export Your Bank Statement
 
 ### 🇬🇧 UK
@@ -230,36 +182,13 @@ python tests/test_pipeline.py
 
 ---
 
-## Roadmap
-
 **V1 (current):** UK · US · India · CSV/PDF/photo · FastAPI · Docker deployment
-
-**V2 (planned):**
-- Month-over-month comparison
-- Personalised saving goals with timeline
-- Canada, Australia support
-- Recurring payment detection
-- Weekly summary email export
-
----
-
-## For Interviewers
-
-This project demonstrates:
-
-1. **Full-stack AI system** — file parsing → LLM categorisation → analysis → REST API → frontend
-2. **Responsible AI design** — verbatim sections prevent LLM from adding unverifiable claims
-3. **Global extensibility** — adding a new country = one config block, zero code changes
-4. **Production architecture** — deterministic Python for numbers, LLM only for language
-5. **API-first thinking** — FastAPI backend with full OpenAPI documentation
-
-Paired with **CreditGuard** (ML credit risk prediction with SHAP explainability for GDPR Article 22 compliance), these projects cover both sides of personal finance AI: the lender's risk model and the borrower's spending reality.
 
 ---
 
 ## Author
 
 **Arfat Mushtaq**
-MSc Artificial Intelligence for Business Intelligence — University of Leicester, UK
+MSc Artificial Intelligence for Business Intelligence - University of Leicester, UK
 
 [💼 LinkedIn](https://www.linkedin.com/in/arfat-mushtaq-0b756824a/) · [🐙 GitHub](https://github.com/arfatmushtaq62) · [✉️ arfatmushtaq62@gmail.com](mailto:arfatmushtaq62@gmail.com)
